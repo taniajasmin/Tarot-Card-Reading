@@ -1,0 +1,1022 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mystic Lavender Tarot</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="api-config.js"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        lavender: {
+                            50: '#faf5ff',
+                            100: '#f3e8ff',
+                            200: '#e9d5ff',
+                            300: '#d8b4fe',
+                            400: '#c084fc',
+                            500: '#a855f7',
+                            600: '#9333ea',
+                            700: '#7c3aed',
+                            800: '#6b21a8',
+                            900: '#581c87',
+                        },
+                        mauve: {
+                            100: '#f3e5f5',
+                            200: '#e1bee7',
+                            300: '#ce93d8',
+                            400: '#ba68c8',
+                            500: '#ab47bc',
+                        },
+                        gold: {
+                            300: '#fde047',
+                            400: '#facc15',
+                            500: '#eab308',
+                        }
+                    },
+                    fontFamily: {
+                        serif: ['Georgia', 'Cambria', 'Times New Roman', 'serif'],
+                        sans: ['ui-sans-serif', 'system-ui', '-apple-system', 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Arial', 'sans-serif'],
+                    },
+                    animation: {
+                        'float': 'float 6s ease-in-out infinite',
+                        'glow-pulse': 'glowPulse 3s ease-in-out infinite',
+                        'fade-in': 'fadeIn 0.8s ease-out forwards',
+                        'slide-up': 'slideUp 0.6s ease-out forwards',
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0px)' },
+                            '50%': { transform: 'translateY(-12px)' },
+                        },
+                        glowPulse: {
+                            '0%, 100%': { boxShadow: '0 0 20px rgba(168, 85, 247, 0.3)' },
+                            '50%': { boxShadow: '0 0 40px rgba(168, 85, 247, 0.6)' },
+                        },
+                        fadeIn: {
+                            '0%': { opacity: '0' },
+                            '100%': { opacity: '1' },
+                        },
+                        slideUp: {
+                            '0%': { opacity: '0', transform: 'translateY(20px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #a855f7; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #9333ea; }
+
+        /* 3D Card Flip */
+        .card-scene { perspective: 1000px; }
+        .card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            text-align: center;
+            transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+            transform-style: preserve-3d;
+        }
+        .card-scene.flipped .card-inner { transform: rotateY(180deg); }
+        .card-scene.reversed .card-inner { transform: rotateY(180deg) rotateZ(180deg); }
+        .card-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            border-radius: 1rem;
+            overflow: hidden;
+        }
+        .card-front {
+            background: linear-gradient(135deg, #f3e8ff 0%, #e9d5ff 100%);
+            border: 2px solid #d8b4fe;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        .dark .card-front {
+            background: linear-gradient(135deg, #3b0764 0%, #581c87 100%);
+            border-color: #a855f7;
+        }
+        .card-back {
+            background: #1a0b2e;
+            transform: rotateY(180deg);
+            border: 2px solid #d8b4fe;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .card-front img, .card-back img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        /* Particle Canvas */
+        #particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* Glassmorphism */
+        .glass {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        .dark .glass {
+            background: rgba(30, 10, 50, 0.75);
+            border: 1px solid rgba(168, 85, 247, 0.2);
+        }
+
+        /* Shuffle Animation */
+        @keyframes shuffleLeft {
+            0% { transform: translateX(0) rotate(0deg); }
+            25% { transform: translateX(-60px) rotate(-8deg); }
+            50% { transform: translateX(0) rotate(0deg); }
+            75% { transform: translateX(60px) rotate(8deg); }
+            100% { transform: translateX(0) rotate(0deg); }
+        }
+        @keyframes shuffleRight {
+            0% { transform: translateX(0) rotate(0deg); }
+            25% { transform: translateX(60px) rotate(8deg); }
+            50% { transform: translateX(0) rotate(0deg); }
+            75% { transform: translateX(-60px) rotate(-8deg); }
+            100% { transform: translateX(0) rotate(0deg); }
+        }
+        .shuffle-anim-left { animation: shuffleLeft 0.4s ease-in-out 3; }
+        .shuffle-anim-right { animation: shuffleRight 0.4s ease-in-out 3; }
+
+        /* Card Hover Glow */
+        .card-hover-glow:hover {
+            box-shadow: 0 0 30px rgba(168, 85, 247, 0.5), 0 0 60px rgba(168, 85, 247, 0.2);
+        }
+
+        /* Spread Position Labels */
+        .position-label {
+            font-size: 0.7rem;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            opacity: 0.8;
+        }
+
+        /* Celtic Cross Grid */
+        .celtic-cross {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            grid-template-rows: repeat(4, 1fr);
+            gap: 0.75rem;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        .cc-pos-1 { grid-column: 2; grid-row: 2; }
+        .cc-pos-2 { grid-column: 2; grid-row: 2; transform: rotate(90deg); z-index: 1; }
+        .cc-pos-3 { grid-column: 1; grid-row: 2; }
+        .cc-pos-4 { grid-column: 2; grid-row: 1; }
+        .cc-pos-5 { grid-column: 2; grid-row: 3; }
+        .cc-pos-6 { grid-column: 2; grid-row: 4; }
+        .cc-pos-7 { grid-column: 4; grid-row: 4; }
+        .cc-pos-8 { grid-column: 4; grid-row: 3; }
+        .cc-pos-9 { grid-column: 4; grid-row: 2; }
+        .cc-pos-10 { grid-column: 4; grid-row: 1; }
+
+        /* Chat Widget */
+        .chat-widget {
+            position: fixed;
+            bottom: 90px;
+            right: 20px;
+            width: 380px;
+            max-width: calc(100vw - 40px);
+            height: 520px;
+            max-height: calc(100vh - 120px);
+            border-radius: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            z-index: 50;
+            transition: all 0.3s ease;
+            transform: translateY(10px);
+            opacity: 0;
+            pointer-events: none;
+        }
+        .chat-widget.open {
+            transform: translateY(0);
+            opacity: 1;
+            pointer-events: auto;
+        }
+        .chat-header {
+            padding: 1rem 1.25rem;
+            background: linear-gradient(135deg, #a855f7, #7c3aed);
+            color: white;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+        .chat-bubble {
+            max-width: 85%;
+            padding: 0.75rem 1rem;
+            border-radius: 1rem;
+            font-size: 0.9rem;
+            line-height: 1.5;
+            animation: fadeIn 0.3s ease;
+            word-break: break-word;
+        }
+        .chat-bubble.user {
+            align-self: flex-end;
+            background: #d8b4fe;
+            color: #3b0764;
+            border-bottom-right-radius: 0.25rem;
+        }
+        .dark .chat-bubble.user {
+            background: #7c3aed;
+            color: white;
+        }
+        .chat-bubble.assistant {
+            align-self: flex-start;
+            background: rgba(255,255,255,0.85);
+            color: #1e293b;
+            border-bottom-left-radius: 0.25rem;
+        }
+        .dark .chat-bubble.assistant {
+            background: rgba(50, 20, 80, 0.85);
+            color: #e9d5ff;
+        }
+        .chat-input-area {
+            padding: 0.75rem;
+            border-top: 1px solid rgba(168, 85, 247, 0.2);
+            display: flex;
+            gap: 0.5rem;
+        }
+        .chat-input-area input {
+            flex: 1;
+            padding: 0.5rem 1rem;
+            border-radius: 9999px;
+            border: 1px solid #d8b4fe;
+            background: rgba(255,255,255,0.6);
+            outline: none;
+            font-size: 0.9rem;
+        }
+        .dark .chat-input-area input {
+            background: rgba(30,10,50,0.6);
+            border-color: #7c3aed;
+            color: white;
+        }
+        .chat-toggle-btn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #a855f7, #7c3aed);
+            color: white;
+            font-size: 1.5rem;
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 4px 20px rgba(168,85,247,0.4);
+            z-index: 50;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.2s;
+        }
+        .chat-toggle-btn:hover { transform: scale(1.1); }
+        .typing-indicator {
+            display: flex;
+            gap: 4px;
+            padding: 0.5rem 1rem;
+            align-self: flex-start;
+        }
+        .typing-indicator span {
+            width: 6px;
+            height: 6px;
+            background: #a855f7;
+            border-radius: 50%;
+            animation: typingBounce 1.4s infinite ease-in-out both;
+        }
+        .typing-indicator span:nth-child(1) { animation-delay: -0.32s; }
+        .typing-indicator span:nth-child(2) { animation-delay: -0.16s; }
+        @keyframes typingBounce {
+            0%, 80%, 100% { transform: scale(0); }
+            40% { transform: scale(1); }
+        }
+
+        /* Utilities */
+        .text-shadow-glow { text-shadow: 0 0 20px rgba(168, 85, 247, 0.5); }
+    </style>
+</head>
+<body class="bg-lavender-50 text-slate-800 dark:bg-slate-950 dark:text-lavender-100 min-h-screen transition-colors duration-500 font-sans overflow-x-hidden">
+
+    <canvas id="particles"></canvas>
+
+    <!-- Navbar -->
+    <nav class="relative z-20 glass sticky top-0 border-b border-lavender-200 dark:border-lavender-800">
+        <div class="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-full bg-gradient-to-br from-lavender-400 to-lavender-600 flex items-center justify-center text-white text-xl shadow-lg">&#10017;</div>
+                <h1 class="text-xl md:text-2xl font-serif font-bold tracking-wide text-lavender-800 dark:text-lavender-200">Mystic Lavender Tarot</h1>
+            </div>
+            <div class="flex items-center gap-4">
+                <button id="historyBtn" class="hidden md:block text-sm font-medium text-lavender-700 dark:text-lavender-300 hover:text-lavender-500 transition-colors">Journal</button>
+                <button id="themeToggle" class="w-10 h-10 rounded-full glass flex items-center justify-center hover:bg-lavender-200 dark:hover:bg-lavender-800 transition-colors" aria-label="Toggle theme">
+                    <span id="themeIcon">&#9790;</span>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="relative z-10 max-w-6xl mx-auto px-4 py-8 md:py-12">
+
+        <!-- Home / Start Screen -->
+        <section id="homeScreen" class="text-center flex flex-col items-center justify-center min-h-[70vh]">
+            <div class="animate-float mb-8">
+                <div class="w-32 h-32 md:w-40 md:h-40 mx-auto rounded-full bg-gradient-to-br from-lavender-300 via-lavender-500 to-purple-700 flex items-center justify-center shadow-2xl shadow-lavender-500/30">
+                    <span class="text-6xl md:text-7xl text-white opacity-90">&#10017;</span>
+                </div>
+            </div>
+            <h2 class="text-4xl md:text-6xl font-serif font-bold mb-4 text-lavender-900 dark:text-lavender-100 text-shadow-glow">Divine Your Path</h2>
+            <p class="text-lg md:text-xl text-lavender-700 dark:text-lavender-300 max-w-xl mb-10 leading-relaxed">
+                Enter a sacred space of intuition and insight. Let the cards reveal the whispers of your soul.
+            </p>
+            <button id="startBtn" class="group relative px-10 py-4 bg-gradient-to-r from-lavender-500 to-purple-600 text-white font-semibold text-lg rounded-full shadow-lg shadow-lavender-500/40 hover:shadow-lavender-500/60 hover:scale-105 transition-all duration-300 overflow-hidden">
+                <span class="relative z-10">Begin Reading</span>
+                <div class="absolute inset-0 bg-gradient-to-r from-purple-600 to-lavender-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+            </button>
+            <button id="historyBtnMobile" class="mt-4 md:hidden text-lavender-600 dark:text-lavender-300 text-sm underline underline-offset-4">View Journal</button>
+        </section>
+
+        <!-- Setup Screen -->
+        <section id="setupScreen" class="hidden max-w-xl mx-auto">
+            <div class="glass rounded-2xl p-8 shadow-xl">
+                <h2 class="text-2xl md:text-3xl font-serif font-bold text-center mb-8 text-lavender-800 dark:text-lavender-200">Prepare Your Reading</h2>
+
+                <div class="mb-6">
+                    <label class="block text-sm font-medium mb-2 text-lavender-700 dark:text-lavender-300">Your Question or Intention</label>
+                    <input type="text" id="questionInput" placeholder="What guidance do you seek today?" class="w-full px-4 py-3 rounded-xl bg-white/60 dark:bg-slate-900/60 border border-lavender-300 dark:border-lavender-700 focus:outline-none focus:ring-2 focus:ring-lavender-500 text-slate-800 dark:text-lavender-100 placeholder-lavender-400 dark:placeholder-lavender-600 transition-all">
+                </div>
+
+                <div class="mb-6">
+                    <label class="block text-sm font-medium mb-2 text-lavender-700 dark:text-lavender-300">Choose a Spread</label>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <button class="spread-select-btn active px-4 py-3 rounded-xl border-2 border-lavender-500 bg-lavender-100 dark:bg-lavender-900/50 text-lavender-800 dark:text-lavender-200 font-medium text-left transition-all hover:shadow-md" data-spread="single">
+                            <div class="font-semibold">Single Card</div>
+                            <div class="text-xs opacity-70 mt-1">Daily guidance & focus</div>
+                        </button>
+                        <button class="spread-select-btn px-4 py-3 rounded-xl border-2 border-lavender-200 dark:border-lavender-800 text-lavender-700 dark:text-lavender-300 font-medium text-left transition-all hover:border-lavender-400 hover:shadow-md" data-spread="three">
+                            <div class="font-semibold">Three Card</div>
+                            <div class="text-xs opacity-70 mt-1">Past / Present / Future</div>
+                        </button>
+                        <button class="spread-select-btn px-4 py-3 rounded-xl border-2 border-lavender-200 dark:border-lavender-800 text-lavender-700 dark:text-lavender-300 font-medium text-left transition-all hover:border-lavender-400 hover:shadow-md" data-spread="five">
+                            <div class="font-semibold">Five Card</div>
+                            <div class="text-xs opacity-70 mt-1">Situation / Challenge / Advice / Past / Outcome</div>
+                        </button>
+                        <button class="spread-select-btn px-4 py-3 rounded-xl border-2 border-lavender-200 dark:border-lavender-800 text-lavender-700 dark:text-lavender-300 font-medium text-left transition-all hover:border-lavender-400 hover:shadow-md" data-spread="celtic">
+                            <div class="font-semibold">Celtic Cross</div>
+                            <div class="text-xs opacity-70 mt-1">10 cards for deep insight</div>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="mb-8">
+                    <label class="block text-sm font-medium mb-2 text-lavender-700 dark:text-lavender-300">Card Orientation</label>
+                    <div class="flex gap-3">
+                        <button class="orientation-btn active flex-1 px-4 py-2 rounded-lg border-2 border-lavender-500 bg-lavender-100 dark:bg-lavender-900/50 text-lavender-800 dark:text-lavender-200 font-medium transition-all" data-orientation="random">Random</button>
+                        <button class="orientation-btn flex-1 px-4 py-2 rounded-lg border-2 border-lavender-200 dark:border-lavender-800 text-lavender-700 dark:text-lavender-300 font-medium transition-all hover:border-lavender-400" data-orientation="upright">Upright Only</button>
+                        <button class="orientation-btn flex-1 px-4 py-2 rounded-lg border-2 border-lavender-200 dark:border-lavender-800 text-lavender-700 dark:text-lavender-300 font-medium transition-all hover:border-lavender-400" data-orientation="reversed">Reversed Only</button>
+                    </div>
+                </div>
+
+                <div class="flex gap-3">
+                    <button id="backToHome" class="flex-1 px-6 py-3 rounded-xl border border-lavender-300 dark:border-lavender-700 text-lavender-700 dark:text-lavender-300 font-medium hover:bg-lavender-100 dark:hover:bg-lavender-900/30 transition-colors">Back</button>
+                    <button id="drawCardsBtn" class="flex-1 px-6 py-3 rounded-xl bg-gradient-to-r from-lavender-500 to-purple-600 text-white font-semibold shadow-lg shadow-lavender-500/30 hover:shadow-lavender-500/50 hover:scale-[1.02] transition-all">Draw Cards</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Shuffle Screen -->
+        <section id="shuffleScreen" class="hidden min-h-[60vh] flex flex-col items-center justify-center">
+            <div class="relative w-64 h-96 mb-8">
+                <div id="shuffleCard1" class="absolute inset-0 card-scene">
+                    <div class="card-inner">
+                        <div class="card-face card-back"><img src="Cards-jpg/CardBacks.jpg" alt="Card back"></div>
+                        <div class="card-face card-front"></div>
+                    </div>
+                </div>
+                <div id="shuffleCard2" class="absolute inset-0 card-scene" style="transform: translateX(10px);">
+                    <div class="card-inner">
+                        <div class="card-face card-back"><img src="Cards-jpg/CardBacks.jpg" alt="Card back"></div>
+                        <div class="card-face card-front"></div>
+                    </div>
+                </div>
+                <div id="shuffleCard3" class="absolute inset-0 card-scene" style="transform: translateX(-10px);">
+                    <div class="card-inner">
+                        <div class="card-face card-back"><img src="Cards-jpg/CardBacks.jpg" alt="Card back"></div>
+                        <div class="card-face card-front"></div>
+                    </div>
+                </div>
+            </div>
+            <p id="shuffleText" class="text-xl font-serif text-lavender-700 dark:text-lavender-300 animate-pulse">Shuffling the deck...</p>
+        </section>
+
+        <!-- Reading Screen -->
+        <section id="readingScreen" class="hidden">
+            <div class="text-center mb-6">
+                <p id="readingQuestion" class="text-lg md:text-xl font-serif italic text-lavender-700 dark:text-lavender-300 mb-2"></p>
+                <p id="readingSpreadName" class="text-sm uppercase tracking-widest text-lavender-500 dark:text-lavender-400"></p>
+            </div>
+
+            <div id="comfortBanner" class="hidden max-w-xl mx-auto mb-6 text-center">
+                <div class="glass rounded-xl p-4 border border-lavender-300 dark:border-lavender-700 animate-fade-in">
+                    <p class="text-sm text-lavender-700 dark:text-lavender-300">
+                        This reading carries intense energy. Your <button onclick="window.toggleChat()" class="underline text-lavender-600 dark:text-lavender-200 font-medium hover:text-lavender-500">Mystic Companion</button> is here if you need comfort.
+                    </p>
+                </div>
+            </div>
+
+            <div id="spreadContainer" class="mb-10"></div>
+
+            <div id="interpretationSection" class="hidden max-w-3xl mx-auto">
+                <div class="glass rounded-2xl p-6 md:p-8 shadow-xl">
+                    <h3 class="text-2xl font-serif font-bold text-center mb-6 text-lavender-800 dark:text-lavender-200">Interpretation</h3>
+                    <div id="interpretationContent" class="space-y-6"></div>
+                </div>
+            </div>
+
+            <div class="flex flex-wrap justify-center gap-4 mt-8">
+                <button id="showInterpretationBtn" class="px-8 py-3 rounded-full bg-gradient-to-r from-lavender-500 to-purple-600 text-white font-semibold shadow-lg shadow-lavender-500/30 hover:shadow-lavender-500/50 hover:scale-105 transition-all">Reveal Meaning</button>
+                <button id="saveReadingBtn" class="px-8 py-3 rounded-full border-2 border-lavender-400 dark:border-lavender-600 text-lavender-700 dark:text-lavender-300 font-semibold hover:bg-lavender-100 dark:hover:bg-lavender-900/30 transition-all">Save to Journal</button>
+                <button id="newReadingBtn" class="px-8 py-3 rounded-full border-2 border-lavender-300 dark:border-lavender-700 text-lavender-600 dark:text-lavender-400 font-medium hover:bg-lavender-50 dark:hover:bg-lavender-900/20 transition-all">New Reading</button>
+            </div>
+        </section>
+
+        <!-- History / Journal Screen -->
+        <section id="historyScreen" class="hidden">
+            <div class="flex items-center justify-between mb-8">
+                <h2 class="text-3xl font-serif font-bold text-lavender-800 dark:text-lavender-200">Your Journal</h2>
+                <button id="closeHistoryBtn" class="px-4 py-2 rounded-lg border border-lavender-300 dark:border-lavender-700 text-lavender-700 dark:text-lavender-300 hover:bg-lavender-100 dark:hover:bg-lavender-900/30 transition-colors">Close</button>
+            </div>
+            <div id="historyList" class="space-y-4"></div>
+            <div id="emptyHistory" class="text-center py-16 hidden">
+                <div class="text-5xl mb-4 opacity-30">&#10017;</div>
+                <p class="text-lavender-600 dark:text-lavender-400">No readings saved yet. Begin your journey to record your insights.</p>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Chat Widget -->
+    <div id="chatWidget" class="chat-widget glass">
+        <div class="chat-header">
+            <div class="flex items-center gap-2">
+                <span class="text-lg">&#10017;</span>
+                <span>Mystic Companion</span>
+            </div>
+            <div class="flex items-center gap-2">
+                <button id="chatClearBtn" class="text-xs bg-white/20 hover:bg-white/30 px-2 py-1 rounded transition-colors" title="Clear memory">Clear</button>
+                <button id="chatCloseBtn" style="background:none;border:none;color:white;font-size:1.4rem;cursor:pointer;line-height:1;">&times;</button>
+            </div>
+        </div>
+        <div id="chatMessages" class="chat-messages"></div>
+        <div class="chat-input-area">
+            <input type="text" id="chatInput" placeholder="Ask your companion...">
+            <button id="chatSendBtn" class="px-4 py-2 rounded-full bg-lavender-500 text-white text-sm font-medium hover:bg-lavender-600 transition-colors shrink-0">Send</button>
+        </div>
+    </div>
+    <button id="chatToggleBtn" class="chat-toggle-btn">&#10017;</button>
+
+    <!-- Footer -->
+    <footer class="relative z-10 text-center py-8 text-sm text-lavender-500 dark:text-lavender-600">
+        <p>Mystic Lavender Tarot &mdash; For entertainment and reflection</p>
+    </footer>
+
+    <script>
+        /*
+         * SECURITY NOTE: This is a client-side single-file app.
+         * The Gemini API key below is visible in source code.
+         * For personal/local use only. Do not publish this file
+         * to a public repository without moving the key to a proxy server.
+         */
+
+        // ========================
+        // TAROT DECK DATA (78 Cards)
+        // ========================
+        const tarotDeck = [
+            { id: 0, name: "The Fool", arcana: "Major", suit: null, number: 0, image: "Cards-jpg/00-TheFool.jpg", keywords: "beginnings, innocence, spontaneity, free spirit", upright: "A new journey begins. Embrace the unknown with an open heart and childlike wonder. Leap into the void trusting the universe to catch you.", reversed: "Recklessness or naivety may lead you astray. Beware of jumping without looking. There is wisdom in pausing to consider the path ahead." },
+            { id: 1, name: "The Magician", arcana: "Major", suit: null, number: 1, image: "Cards-jpg/01-TheMagician.jpg", keywords: "manifestation, resourcefulness, power, inspired action", upright: "You have all the tools you need to shape your reality. Focus your will and channel your energy with intention. The elements align in your favor.", reversed: "Manipulation, trickery, or untapped potential. You may be misusing your gifts or doubting your own power. Realign with your true purpose." },
+            { id: 2, name: "The High Priestess", arcana: "Major", suit: null, number: 2, image: "Cards-jpg/02-TheHighPriestess.jpg", keywords: "intuition, sacred knowledge, divine feminine, subconscious", upright: "Trust the whispers of your inner voice. Secrets unfold in the silence between thoughts. The answers you seek dwell within the temple of your soul.", reversed: "Secrets remain veiled, or you ignore your intuition. Surface-level understanding blocks deeper wisdom. Reconnect with your inner mystic." },
+            { id: 3, name: "The Empress", arcana: "Major", suit: null, number: 3, image: "Cards-jpg/03-TheEmpress.jpg", keywords: "femininity, beauty, nature, nurturing, abundance", upright: "Creation flows through you like a fertile garden. Nurture your dreams with tenderness and patience. Abundance blossoms when love is the seed.", reversed: "Creative block or neglect of self-care. Dependence on others for validation. Reconnect with the earth and your own nurturing spirit." },
+            { id: 4, name: "The Emperor", arcana: "Major", suit: null, number: 4, image: "Cards-jpg/04-TheEmperor.jpg", keywords: "authority, structure, father figure, stability", upright: "Order rises from chaos under your steady hand. Build foundations that last. Leadership and discipline guide your empire toward lasting success.", reversed: "Tyranny, rigidity, or lack of discipline. Domination by another or an inability to rule yourself. Flexibility is also a form of strength." },
+            { id: 5, name: "The Hierophant", arcana: "Major", suit: null, number: 5, image: "Cards-jpg/05-TheHierophant.jpg", keywords: "tradition, spiritual wisdom, conformity, institutions", upright: "Ancient wisdom offers guidance. Honor the traditions that ground you. A teacher or mentor appears to illuminate the sacred path ahead.", reversed: "Rebellion against convention or institutional hypocrisy. Find your own spiritual truth beyond rigid dogma. Personal beliefs over imposed rules." },
+            { id: 6, name: "The Lovers", arcana: "Major", suit: null, number: 6, image: "Cards-jpg/06-TheLovers.jpg", keywords: "love, harmony, relationships, choices, alignment", upright: "A union of souls mirrors the divine dance. Choose with your heart aligned to your highest truth. Love weaves bonds that transcend the mundane.", reversed: "Disharmony, difficult choices, or misaligned values. Temptation may lead you from your path. Examine where your loyalties truly lie." },
+            { id: 7, name: "The Chariot", arcana: "Major", suit: null, number: 7, image: "Cards-jpg/07-TheChariot.jpg", keywords: "control, willpower, determination, victory", upright: "Two opposing forces unite under your command. Drive forward with unwavering focus. Victory belongs to those who master their own contradictions.", reversed: "Loss of control or directionless aggression. You may be forcing outcomes instead of flowing with them. Pause and realign your inner horses." },
+            { id: 8, name: "Strength", arcana: "Major", suit: null, number: 8, image: "Cards-jpg/08-Strength.jpg", keywords: "courage, persuasion, influence, compassion", upright: "True strength wears the face of gentleness. Tame the beast within through patience and empathy. Your inner fire burns brighter than any external force.", reversed: "Self-doubt, raw anger, or suppressed emotions. You may feel depleted or out of control. Courage begins with acknowledging vulnerability." },
+            { id: 9, name: "The Hermit", arcana: "Major", suit: null, number: 9, image: "Cards-jpg/09-TheHermit.jpg", keywords: "soul-searching, introspection, solitude, guidance", upright: "The lantern of truth illuminates only the next step. Withdraw to find the wisdom that noise conceals. Solitude is not loneliness, but sacred communion.", reversed: "Isolation, loneliness, or avoidance of introspection. You may be lost in the dark because you refuse to light your own lamp. Seek inner clarity." },
+            { id: 10, name: "Wheel of Fortune", arcana: "Major", suit: null, number: 10, image: "Cards-jpg/10-WheelOfFortune.jpg", keywords: "luck, karma, cycles, destiny, turning point", upright: "The wheel turns and fate shifts. Embrace the cycle of change, for what descends must rise again. Destiny knocks at your door.", reversed: "Bad luck, resistance to change, or feeling trapped by circumstance. Remember: the wheel always turns. This too shall pass." },
+            { id: 11, name: "Justice", arcana: "Major", suit: null, number: 11, image: "Cards-jpg/11-Justice.jpg", keywords: "fairness, truth, law, cause and effect", upright: "The scales seek balance. Act with integrity and accept the consequences of your choices. Truth, though sharp, cuts only what binds you.", reversed: "Injustice, dishonesty, or avoidance of accountability. You may be judging yourself too harshly. Seek the truth hidden beneath appearances." },
+            { id: 12, name: "The Hanged Man", arcana: "Major", suit: null, number: 12, image: "Cards-jpg/12-TheHangedMan.jpg", keywords: "surrender, new perspective, pause, sacrifice", upright: "Suspend action and see the world upside down. Through surrender comes revelation. Sometimes stillness is the most powerful movement of all.", reversed: "Stalling, resistance, or martyrdom. You cling to an old viewpoint out of fear. Let go, and the universe will realign." },
+            { id: 13, name: "Death", arcana: "Major", suit: null, number: 13, image: "Cards-jpg/13-Death.jpg", keywords: "endings, transformation, transition, rebirth", upright: "A chapter closes so another may begin. Do not fear the harvest; it makes room for new seeds. Transformation is the alchemy of the soul.", reversed: "Resistance to change, stagnation, or painful endings prolonged. Let the old self die with grace. Rebirth waits beyond the threshold." },
+            { id: 14, name: "Temperance", arcana: "Major", suit: null, number: 14, image: "Cards-jpg/14-Temperance.jpg", keywords: "balance, moderation, patience, purpose", upright: "The waters of opposites merge into harmony. Patience tempers the fire of ambition. Find the middle path where magic truly flows.", reversed: "Imbalance, excess, or impatience. You may be pouring your energy into vessels with holes. Restore equilibrium within yourself." },
+            { id: 15, name: "The Devil", arcana: "Major", suit: null, number: 15, image: "Cards-jpg/15-TheDevil.jpg", keywords: "shadow self, attachment, restriction, addiction", upright: "Chains of your own making bind you to illusion. Face the shadow without judgment. Awareness dissolves the locks that fear has forged.", reversed: "Liberation from bondage, breaking free, or reclaiming power. You are releasing toxic attachments. Step into the light of your own authority." },
+            { id: 16, name: "The Tower", arcana: "Major", suit: null, number: 16, image: "Cards-jpg/16-TheTower.jpg", keywords: "sudden change, upheaval, awakening, revelation", upright: "Lightning strikes the tower of false security. What crumbles was never built to last. In the ruins of the old, truth stands unshaken.", reversed: "Disaster avoided, or resistance to necessary change. Delayed upheaval may only prolong suffering. Sometimes the tower must fall." },
+            { id: 17, name: "The Star", arcana: "Major", suit: null, number: 17, image: "Cards-jpg/17-TheStar.jpg", keywords: "hope, faith, purpose, renewal, inspiration", upright: "The star shines upon your path with gentle promise. Hope is not naive; it is the courage to keep dreaming. Heal and renew under its light.", reversed: "Despair, disconnection, or lost faith. You may feel abandoned by the universe. The star still shines even when clouds obscure its light." },
+            { id: 18, name: "The Moon", arcana: "Major", suit: null, number: 18, image: "Cards-jpg/18-TheMoon.jpg", keywords: "illusion, fear, anxiety, intuition, subconscious", upright: "Shadows lengthen and the path grows strange. Trust your intuition to guide you through uncertainty. Not all is as it seems in the moonlight.", reversed: "Confusion, deception, or fears coming to light. Secrets surface. Face what lurks in the shadows and it loses its power over you." },
+            { id: 19, name: "The Sun", arcana: "Major", suit: null, number: 19, image: "Cards-jpg/19-TheSun.jpg", keywords: "joy, success, vitality, positivity, vitality", upright: "The sun rises clear and warm upon your face. Joy is your birthright. Bask in the radiance of success, simplicity, and unbridled happiness.", reversed: "Temporary sadness, ego, or blocked joy. The clouds pass. Do not let a moment of shadow convince you the sun has vanished." },
+            { id: 20, name: "Judgement", arcana: "Major", suit: null, number: 20, image: "Cards-jpg/20-Judgement.jpg", keywords: "rebirth, inner calling, absolution, evaluation", upright: "A clarion call awakens your true self. Rise from the past and answer your higher calling. Forgiveness liberates the soul for a new dawn.", reversed: "Self-doubt, refusal to learn from the past, or harsh judgment. You are harder on yourself than the universe is. Embrace absolution." },
+            { id: 21, name: "The World", arcana: "Major", suit: null, number: 21, image: "Cards-jpg/21-TheWorld.jpg", keywords: "completion, integration, accomplishment, travel", upright: "The journey reaches its glorious fulfillment. Wholeness is achieved. Dance at the center of your own universe, for you are complete.", reversed: "Incomplete projects, lack of closure, or seeking fulfillment externally. The world is within you. Finish what you started." },
+
+            { id: 22, name: "Ace of Wands", arcana: "Minor", suit: "Wands", number: 1, image: "Cards-jpg/Wands01.jpg", keywords: "inspiration, creative spark, new initiative, passion", upright: "A spark of divine fire ignites within you. Seize this burst of creative energy and let it light your way forward. Potential crackles in the air.", reversed: "Delays, lack of motivation, or scattered energy. The spark is there but dampened. Reignite your passion by returning to your why." },
+            { id: 23, name: "Two of Wands", arcana: "Minor", suit: "Wands", number: 2, image: "Cards-jpg/Wands02.jpg", keywords: "planning, decisions, discovery, future planning", upright: "You stand at the crossroads of possibility. The world awaits your command. Plan boldly, for your vision stretches beyond the horizon.", reversed: "Fear of the unknown, poor planning, or playing it too safe. Step beyond the familiar walls. The greatest discoveries require risk." },
+            { id: 24, name: "Three of Wands", arcana: "Minor", suit: "Wands", number: 3, image: "Cards-jpg/Wands03.jpg", keywords: "expansion, foresight, leadership, progress", upright: "Your ships return with bounty. The seeds of foresight bear fruit. Look ahead with confidence; your efforts are rippling outward into success.", reversed: "Delays, obstacles, or lack of foresight. Plans may need revision. Patience is required, but do not abandon the voyage." },
+            { id: 25, name: "Four of Wands", arcana: "Minor", suit: "Wands", number: 4, image: "Cards-jpg/Wands04.jpg", keywords: "celebration, harmony, home, community", upright: "Joyous gatherings and milestones reached. Harmony fills the sacred space of home. Celebrate the foundation you have built with those you love.", reversed: "Conflict, lack of support, or unstable foundations. The celebration is postponed. Address the cracks in your community with honesty." },
+            { id: 26, name: "Five of Wands", arcana: "Minor", suit: "Wands", number: 5, image: "Cards-jpg/Wands05.jpg", keywords: "conflict, competition, tension, diversity", upright: "Clashing wills create friction but also forge strength. Not all conflict is destructive; some refines your edge. Stand your ground with integrity.", reversed: "Resolution, avoidance of conflict, or burnt-out competition. Peace returns after the storm. Learn when to lay down the wand." },
+            { id: 27, name: "Six of Wands", arcana: "Minor", suit: "Wands", number: 6, image: "Cards-jpg/Wands06.jpg", keywords: "victory, recognition, progress, self-confidence", upright: "Triumph rides before you on the shoulders of cheering crowds. Your efforts are recognized. Bask in well-earned success and carry it with grace.", reversed: "Self-doubt, delayed recognition, or pride before a fall. Seek validation from within rather than the crowd. True victory needs no trumpet." },
+            { id: 28, name: "Seven of Wands", arcana: "Minor", suit: "Wands", number: 7, image: "Cards-jpg/Wands07.jpg", keywords: "perseverance, defense, maintaining position, courage", upright: "You stand your ground against opposing forces. Courage is your shield. Defend what you have built, for your position is stronger than it seems.", reversed: "Overwhelm, giving up, or inability to defend your stance. Choose your battles wisely. Sometimes retreat is the wiser form of courage." },
+            { id: 29, name: "Eight of Wands", arcana: "Minor", suit: "Wands", number: 8, image: "Cards-jpg/Wands08.jpg", keywords: "speed, action, movement, swift change", upright: "Events accelerate like arrows in flight. Momentum carries you forward. Strike while the iron is hot and do not hesitate.", reversed: "Delays, frustration, or misdirected energy. Things are moving slower than hoped. Check your aim before releasing the arrow." },
+            { id: 30, name: "Nine of Wands", arcana: "Minor", suit: "Wands", number: 9, image: "Cards-jpg/Wands09.jpg", keywords: "resilience, persistence, last stand, grit", upright: "Battered but unbroken, you stand watch. Your resilience is your crown. One more challenge remains, but you have survived worse. Persist.", reversed: "Exhaustion, defensiveness, or paranoia. You may be fighting ghosts. Rest and recover; the battle is not what it seems." },
+            { id: 31, name: "Ten of Wands", arcana: "Minor", suit: "Wands", number: 10, image: "Cards-jpg/Wands10.jpg", keywords: "burden, responsibility, hard work, completion", upright: "The weight of many tasks bends your shoulders. Responsibility is honorable, but even the strong must set down their load to breathe.", reversed: "Release, delegation, or collapsing under pressure. You are carrying what is not yours. Let go and lighten your spirit." },
+            { id: 32, name: "Page of Wands", arcana: "Minor", suit: "Wands", number: 11, image: "Cards-jpg/Wands11.jpg", keywords: "exploration, enthusiasm, free spirit, discovery", upright: "A messenger of fire arrives with news of adventure. Embrace curiosity and enthusiasm. The world is vast and waiting for your first step.", reversed: "Bad news, impulsiveness, or lack of direction. Enthusiasm without planning leads to dead ends. Focus your fire before you leap." },
+            { id: 33, name: "Knight of Wands", arcana: "Minor", suit: "Wands", number: 12, image: "Cards-jpg/Wands12.jpg", keywords: "action, adventure, passion, impulsiveness", upright: "The knight charges forward with blazing passion. Action is your ally now. Pursue your desires with courage, but mind the path beneath you.", reversed: "Recklessness, haste, or scattered energy. The horse runs wild. Channel your passion or risk burning out before the quest is done." },
+            { id: 34, name: "Queen of Wands", arcana: "Minor", suit: "Wands", number: 13, image: "Cards-jpg/Wands13.jpg", keywords: "confidence, charisma, determination, social", upright: "The queen of fire radiates warmth and unshakable confidence. She creates with joy and leads with magnetism. Embody your own inner fire.", reversed: "Self-doubt, jealousy, or manipulative charm. Your flame flickers from comparison. Reconnect with the source of your own light." },
+            { id: 35, name: "King of Wands", arcana: "Minor", suit: "Wands", number: 14, image: "Cards-jpg/Wands14.jpg", keywords: "leadership, vision, entrepreneurship, honor", upright: "The king sees the grand vision and commands with fiery wisdom. Lead with passion tempered by experience. Your charisma builds empires.", reversed: "Impulsiveness, tyranny, or aggressive leadership. Fire without wisdom burns what it seeks to build. Lead with compassion as well as courage." },
+
+            { id: 36, name: "Ace of Cups", arcana: "Minor", suit: "Cups", number: 1, image: "Cards-jpg/Cups01.jpg", keywords: "love, new feelings, emotional awakening, compassion", upright: "The cup overflows with love and spiritual connection. New emotions awaken like a spring from deep within. Open your heart to receive.", reversed: "Emotional block, emptiness, or repressed feelings. The well runs dry when you give without receiving. Heal your own cup first." },
+            { id: 37, name: "Two of Cups", arcana: "Minor", suit: "Cups", number: 2, image: "Cards-jpg/Cups02.jpg", keywords: "partnership, unity, love, mutual attraction", upright: "Two souls meet as equals, cups raised in harmony. True partnership blossoms through mutual respect. Love is the bridge between worlds.", reversed: "Imbalance, broken union, or misaligned partnerships. A relationship may need honest communication. Not all bonds are meant to last." },
+            { id: 38, name: "Three of Cups", arcana: "Minor", suit: "Cups", number: 3, image: "Cards-jpg/Cups03.jpg", keywords: "friendship, community, joy, celebration", upright: "Sisters of the soul gather in joyous communion. Celebrate the bonds that sustain you. Happiness multiplies when shared among kindred spirits.", reversed: "Conflict within the group, gossip, or isolation. The circle is broken. Rebuild trust through vulnerability and honest celebration." },
+            { id: 39, name: "Four of Cups", arcana: "Minor", suit: "Cups", number: 4, image: "Cards-jpg/Cups04.jpg", keywords: "contemplation, apathy, reevaluation, missed opportunity", upright: "You sit in quiet contemplation, unmoved by what is offered. Discontent stirs beneath the surface. Look within to understand what you truly need.", reversed: "New awareness, acceptance, or emerging from apathy. The fog lifts and you see the cup before you. Gratitude returns with open eyes." },
+            { id: 40, name: "Five of Cups", arcana: "Minor", suit: "Cups", number: 5, image: "Cards-jpg/Cups05.jpg", keywords: "loss, grief, disappointment, acceptance", upright: "Three cups spill, yet two remain standing. Grief is sacred, but do not let sorrow blind you to what still sustains. Healing begins with acknowledgment.", reversed: "Recovery, forgiveness, or moving on. The tears have watered new seeds. Lift your eyes from the spilled cups and walk forward." },
+            { id: 41, name: "Six of Cups", arcana: "Minor", suit: "Cups", number: 6, image: "Cards-jpg/Cups06.jpg", keywords: "nostalgia, innocence, childhood memories, simplicity", upright: "Memories of simpler times bloom like wildflowers. Innocence and nostalgia offer comfort. A gift from the past arrives to warm your heart.", reversed: "Stuck in the past, naivety, or unresolved childhood issues. Nostalgia becomes a cage. Release the past to embrace the present fully." },
+            { id: 42, name: "Seven of Cups", arcana: "Minor", suit: "Cups", number: 7, image: "Cards-jpg/Cups07.jpg", keywords: "choices, fantasy, wishes, illusion", upright: "Many cups shimmer with dreams and illusions. Fantasies dazzle, but not all are real. Clarify your desires before you drink from the cup.", reversed: "Reality check, clarity, or avoiding decisions. The illusions dissolve. See things as they are and choose with sober eyes." },
+            { id: 43, name: "Eight of Cups", arcana: "Minor", suit: "Cups", number: 8, image: "Cards-jpg/Cups08.jpg", keywords: "walking away, disillusionment, leaving behind, quest", upright: "You turn your back on what no longer fulfills you. The journey inward calls louder than comfort. Leave the empty cups and seek deeper waters.", reversed: "Fear of change, stagnation, or returning to the familiar. Avoidance keeps you from growth. The unknown is less frightening than emptiness." },
+            { id: 44, name: "Nine of Cups", arcana: "Minor", suit: "Cups", number: 9, image: "Cards-jpg/Cups09.jpg", keywords: "contentment, satisfaction, emotional stability, wishes fulfilled", upright: "The wish card. Contentment glows from within as you sit among your blessings. Emotional fulfillment is yours. Savor this moment of peace.", reversed: "Dissatisfaction, smugness, or unfulfilled wishes. You have the cups but not the thirst is quenched. Look deeper for true satisfaction." },
+            { id: 45, name: "Ten of Cups", arcana: "Minor", suit: "Cups", number: 10, image: "Cards-jpg/Cups10.jpg", keywords: "happiness, family, harmony, emotional fulfillment", upright: "The rainbow of emotional bliss arches over home and heart. Family, love, and harmony converge. This is the garden of the soul in full bloom.", reversed: "Disrupted harmony, family conflict, or unrealistic ideals. The rainbow fades when expectations replace appreciation. Repair the bonds with love." },
+            { id: 46, name: "Page of Cups", arcana: "Minor", suit: "Cups", number: 11, image: "Cards-jpg/Cups11.jpg", keywords: "creative opportunity, curiosity, intuition, sensitivity", upright: "A messenger of water brings artistic inspiration and tender feelings. Open your heart to creative possibilities. Intuition speaks in daydreams.", reversed: "Emotional immaturity, insecurity, or creative blocks. Sensitivity becomes fragility. Ground your dreams in gentle action." },
+            { id: 47, name: "Knight of Cups", arcana: "Minor", suit: "Cups", number: 12, image: "Cards-jpg/Cups12.jpg", keywords: "romance, charm, idealism, pursuit", upright: "The knight of dreams rides forth on a quest of the heart. Romance and idealism guide his hand. Follow your heart, but keep one eye on reality.", reversed: "Unrealistic ideals, moodiness, or disappointment in love. The dreamer loses himself in fantasy. Ground your romantic visions in truth." },
+            { id: 48, name: "Queen of Cups", arcana: "Minor", suit: "Cups", number: 13, image: "Cards-jpg/Cups13.jpg", keywords: "compassion, intuition, emotional security, healing", upright: "The queen of water feels deeply and loves without condition. Her intuition is a healing balm. Trust your feelings; they are wiser than logic.", reversed: "Emotional overwhelm, martyrdom, or lost boundaries. You cannot pour from an empty cup. Protect your sensitive heart with gentle limits." },
+            { id: 49, name: "King of Cups", arcana: "Minor", suit: "Cups", number: 14, image: "Cards-jpg/Cups14.jpg", keywords: "emotional balance, diplomacy, compassion, maturity", upright: "The king masters the waters of emotion with calm authority. He leads with empathy and grace. Balance your heart and mind to guide others.", reversed: "Emotional manipulation, moodiness, or suppressed feelings. The waters churn beneath a calm surface. Express what you truly feel." },
+
+            { id: 50, name: "Ace of Swords", arcana: "Minor", suit: "Swords", number: 1, image: "Cards-jpg/Swords01.jpg", keywords: "clarity, breakthrough, new idea, mental clarity", upright: "The sword of truth cuts through confusion. A brilliant idea strikes like lightning. Clarity is your weapon; wield it with honor and precision.", reversed: "confusion, chaos, or lack of clarity. The mind is clouded by doubt. Seek stillness for the truth to emerge from the noise." },
+            { id: 51, name: "Two of Swords", arcana: "Minor", suit: "Swords", number: 2, image: "Cards-jpg/Swords02.jpg", keywords: "indecision, difficult choices, stalemate, avoidance", upright: "Blindfolded between two paths, you hesitate. The choice is difficult but necessary. Remove the blindfold and face what you have avoided.", reversed: "Indecision, confusion, or information overload. The stalemate breaks when you stop overthinking. Trust your gut and choose." },
+            { id: 52, name: "Three of Swords", arcana: "Minor", suit: "Swords", number: 3, image: "Cards-jpg/Swords03.jpg", keywords: "heartbreak, grief, sorrow, emotional pain", upright: "Three swords pierce the heart. Grief is the price of love. Acknowledge the pain fully, for only then can the healing truly begin.", reversed: "Recovery, forgiveness, or moving forward from loss. The heart mends with time. Release the blade and let the wound close." },
+            { id: 53, name: "Four of Swords", arcana: "Minor", suit: "Swords", number: 4, image: "Cards-jpg/Swords04.jpg", keywords: "rest, restoration, contemplation, recuperation", upright: "Lay down the sword and rest. Recovery is not surrender but preparation. In stillness, the mind finds peace and the spirit regains strength.", reversed: "Restlessness, burnout, or lack of progress. You resist the rest you desperately need. Sleep now, or the sword will slip from weary hands." },
+            { id: 54, name: "Five of Swords", arcana: "Minor", suit: "Swords", number: 5, image: "Cards-jpg/Swords05.jpg", keywords: "conflict, defeat, winning at all costs, betrayal", upright: "A hollow victory leaves you standing among abandoned allies. Winning the battle may cost the war. Reflect on the price of your triumph.", reversed: "Reconciliation, making amends, or past resentment. The sword is sheathed. Choose peace over pride before all is truly lost." },
+            { id: 55, name: "Six of Swords", arcana: "Minor", suit: "Swords", number: 6, image: "Cards-jpg/Swords06.jpg", keywords: "transition, change, moving on, leaving behind", upright: "The boat glides toward calmer waters. You leave turbulence behind for a place of peace. Transition is tender, but the shore ahead is gentle.", reversed: "Resistance to change, unfinished business, or delayed departure. You linger where the water is rough. Trust the current to carry you." },
+            { id: 56, name: "Seven of Swords", arcana: "Minor", suit: "Swords", number: 7, image: "Cards-jpg/Swords07.jpg", keywords: "deception, strategy, stealth, getting away with something", upright: "Cunning and stealth serve your strategy, but at what cost? Not all battles are won honorably. Be wary of deceit around and within you.", reversed: "Coming clean, rethinking approach, or consequences of deceit. Secrets surface. Honesty now prevents greater damage later." },
+            { id: 57, name: "Eight of Swords", arcana: "Minor", suit: "Swords", number: 8, image: "Cards-jpg/Swords08.jpg", keywords: "restriction, imprisonment, self-victimization, negative thoughts", upright: "Bound and blindfolded, you believe escape is impossible. Yet the bindings are loose. Your prison is built from your own thoughts. Free yourself.", reversed: "Liberation, self-acceptance, or releasing negative thoughts. The blindfold falls away. You have always held the key to your freedom." },
+            { id: 58, name: "Nine of Swords", arcana: "Minor", suit: "Swords", number: 9, image: "Cards-jpg/Swords09.jpg", keywords: "anxiety, worry, fear, nightmares", upright: "Night terrors and anxious thoughts spiral in the dark. Worry has become a prison. Remember: these swords hang on the wall, not in your heart.", reversed: "Hope, reaching out, or despair lifting. The dawn breaks on troubled sleep. Share your burdens; you need not face the night alone." },
+            { id: 59, name: "Ten of Swords", arcana: "Minor", suit: "Swords", number: 10, image: "Cards-jpg/Swords10.jpg", keywords: "painful endings, deep wounds, betrayal, loss", upright: "The darkest hour before the dawn. A painful ending cuts deep, but the worst is over. Lie still and let the old self dissolve into the earth.", reversed: "Recovery, regeneration, or resisting an inevitable end. The swords are removed one by one. Rise from the ashes stronger than before." },
+            { id: 60, name: "Page of Swords", arcana: "Minor", suit: "Swords", number: 11, image: "Cards-jpg/Swords11.jpg", keywords: "curiosity, new ideas, thirst for knowledge, communication", upright: "A messenger of air arrives with sharp wit and curiosity. New ideas spark like flint. Speak your truth with clarity, but temper it with kindness.", reversed: "Deception, manipulation, or all talk and no action. Words become weapons. Ensure your curiosity does not become intrusion." },
+            { id: 61, name: "Knight of Swords", arcana: "Minor", suit: "Swords", number: 12, image: "Cards-jpg/Swords12.jpg", keywords: "action, impulsiveness, defending beliefs, haste", upright: "The knight charges with fierce intellect and rapid action. His mind is a blade. Pursue your goals with determination, but beware the obstacles ahead.", reversed: "No direction, disregard for consequences, or unpreparedness. Haste makes waste. Slow the charge and plan the attack with wisdom." },
+            { id: 62, name: "Queen of Swords", arcana: "Minor", suit: "Swords", number: 13, image: "Cards-jpg/Swords13.jpg", keywords: "independence, unbiased judgment, clear boundaries, direct communication", upright: "The queen of air sees truth without illusion. Her judgment is fair and her words precise. Lead with intellect and honesty, but do not freeze your heart.", reversed: "Cold-heartedness, cruelty, or deception. Truth becomes a weapon rather than a gift. Let compassion temper your clarity." },
+            { id: 63, name: "King of Swords", arcana: "Minor", suit: "Swords", number: 14, image: "Cards-jpg/Swords14.jpg", keywords: "mental clarity, intellectual power, authority, truth", upright: "The king commands with logic, ethics, and absolute clarity. Truth is his scepter. Lead with your mind, but let justice guide your decisions.", reversed: "Quiet power, inner truth, or misuse of authority. Tyranny dressed in logic is still tyranny. Ensure your power serves the greater good." },
+
+            { id: 64, name: "Ace of Pentacles", arcana: "Minor", suit: "Pentacles", number: 1, image: "Cards-jpg/Pentacles01.jpg", keywords: "new financial opportunity, prosperity, manifestation, abundance", upright: "A golden opportunity materializes from the earth. Prosperity is within reach. Plant this seed with care and watch abundance grow.", reversed: "Lost opportunity, lack of planning, or scarcity mindset. The seed falls on stone. Ground your dreams in practical action." },
+            { id: 65, name: "Two of Pentacles", arcana: "Minor", suit: "Pentacles", number: 2, image: "Cards-jpg/Pentacles02.jpg", keywords: "balance, adaptability, time management, prioritization", upright: "You juggle responsibilities with dexterous grace. Adaptability is your ally. Keep the rhythm steady, and the dance of duties becomes joyful.", reversed: "Overwhelm, disorganization, or financial mess. Too many balls in the air. Prioritize what truly matters and let the rest fall." },
+            { id: 66, name: "Three of Pentacles", arcana: "Minor", suit: "Pentacles", number: 3, image: "Cards-jpg/Pentacles03.jpg", keywords: "teamwork, collaboration, learning, implementation", upright: "Masters gather to build something lasting. Collaboration elevates skill. Your contribution is valued; learn from those who have walked before.", reversed: "Lack of teamwork, disregard for skills, or poor quality. The tower crumbles without unity. Respect the craft and the craftsmen." },
+            { id: 67, name: "Four of Pentacles", arcana: "Minor", suit: "Pentacles", number: 4, image: "Cards-jpg/Pentacles04.jpg", keywords: "security, conservation, frugality, control", upright: "You hold your resources close, building stability. Security is wise, but grasp too tightly and abundance cannot flow. Balance holding with giving.", reversed: "Greed, materialism, or self-protection. Fear of loss creates the very scarcity you dread. Open your hands and trust in abundance." },
+            { id: 68, name: "Five of Pentacles", arcana: "Minor", suit: "Pentacles", number: 5, image: "Cards-jpg/Pentacles05.jpg", keywords: "financial loss, poverty, lack mindset, isolation", upright: "Hard times fall like winter snow. You feel excluded and in need. Yet the light burns in the window nearby. Help is available if you ask.", reversed: "Recovery from loss, spiritual poverty, or finding help. The frost thaws. You discover resources you overlooked in your despair." },
+            { id: 69, name: "Six of Pentacles", arcana: "Minor", suit: "Pentacles", number: 6, image: "Cards-jpg/Pentacles06.jpg", keywords: "generosity, charity, giving, prosperity, sharing wealth", upright: "Give and receive in equal measure. Generosity flows like a river that never empties. Your prosperity blesses others, and theirs returns to you.", reversed: "Selfishness, debt, or strings attached to gifts. Inequality taints the exchange. Give freely or not at all." },
+            { id: 70, name: "Seven of Pentacles", arcana: "Minor", suit: "Pentacles", number: 7, image: "Cards-jpg/Pentacles07.jpg", keywords: "long-term view, sustainable results, perseverance, investment", upright: "You pause to assess the garden you have grown. Patience has borne fruit, but more waits to ripen. Invest in the future with steady hands.", reversed: "Lack of long-term vision, limited success, or impatience. The harvest is meager from neglected seeds. Reevaluate where you invest your time." },
+            { id: 71, name: "Eight of Pentacles", arcana: "Minor", suit: "Pentacles", number: 8, image: "Cards-jpg/Pentacles08.jpg", keywords: "apprenticeship, repetitive tasks, mastery, skill development", upright: "The artisan hones his craft with quiet dedication. Mastery comes through repetition. Embrace the work; each repetition is a step toward excellence.", reversed: "Self-development, perfectionism, or misdirected effort. You work hard but not smart. Step back and refine your approach to the craft." },
+            { id: 72, name: "Nine of Pentacles", arcana: "Minor", suit: "Pentacles", number: 9, image: "Cards-jpg/Pentacles09.jpg", keywords: "abundance, luxury, self-sufficiency, financial independence", upright: "You dwell in the garden of your own making. Independence and refinement grace your life. Enjoy the fruits of your disciplined labor with grace.", reversed: "Superficiality, living beyond means, or lack of independence. The gilded cage is still a cage. True abundance includes inner freedom." },
+            { id: 73, name: "Ten of Pentacles", arcana: "Minor", suit: "Pentacles", number: 10, image: "Cards-jpg/Pentacles10.jpg", keywords: "wealth, financial security, family, long-term success", upright: "Legacy and prosperity span generations. You stand at the pinnacle of material and familial success. The foundation you built endures beyond you.", reversed: "Financial failure, loneliness, or loss of legacy. The walls crumble when values are forgotten. True wealth lies in connection, not coin." },
+            { id: 74, name: "Page of Pentacles", arcana: "Minor", suit: "Pentacles", number: 11, image: "Cards-jpg/Pentacles11.jpg", keywords: "manifestation, financial opportunity, skill development, ambition", upright: "A messenger of earth brings news of opportunity and study. Ambition stirs. Set practical goals and pursue them with patient determination.", reversed: "Lack of progress, procrastination, or learn from failure. Dreams remain dreams without groundwork. Begin with a single step, however small." },
+            { id: 75, name: "Knight of Pentacles", arcana: "Minor", suit: "Pentacles", number: 12, image: "Cards-jpg/Pentacles12.jpg", keywords: "hard work, productivity, routine, conservatism", upright: "The knight moves slowly but never falters. Diligence and responsibility guide his path. Success is built brick by brick with unwavering effort.", reversed: "Self-discipline, boredom, or feeling stuck. The plow moves in circles. Introduce flexibility into your routine before stagnation sets in." },
+            { id: 76, name: "Queen of Pentacles", arcana: "Minor", suit: "Pentacles", number: 13, image: "Cards-jpg/Pentacles13.jpg", keywords: "nurturing, practical, providing financially, working parent", upright: "The queen of earth nurtures with practical love. She creates comfort and security for those she loves. Ground your care in tangible support.", reversed: "Financial independence, self-care, or work-home conflict. You give until empty. Tend your own garden so you can tend others." },
+            { id: 77, name: "King of Pentacles", arcana: "Minor", suit: "Pentacles", number: 14, image: "Cards-jpg/Pentacles14.jpg", keywords: "abundance, prosperity, security, discipline", upright: "The king of earth embodies material success and disciplined leadership. Abundance flows from wise stewardship. Rule your domain with generosity.", reversed: "Greed, materialism, or instability. Wealth becomes a prison when it replaces meaning. Use your abundance to uplift, not control." }
+        ];
+
+        const spreads = {
+            single: { name: "Single Card", positions: [{ label: "Guidance", desc: "The core message for your question." }] },
+            three: { name: "Three Card Spread", positions: [{ label: "Past", desc: "What has shaped your current situation." },{ label: "Present", desc: "The energies currently surrounding you." },{ label: "Future", desc: "The probable outcome if you continue on this path." }] },
+            five: { name: "Five Card Spread", positions: [{ label: "Situation", desc: "The heart of the matter." },{ label: "Challenge", desc: "The obstacle or conflict you face." },{ label: "Advice", desc: "Guidance on how to proceed." },{ label: "Past", desc: "The foundation leading here." },{ label: "Outcome", desc: "The likely result of following the advice." }] },
+            celtic: { name: "Celtic Cross", positions: [{ label: "Present", desc: "Your current situation." },{ label: "Cross", desc: "The challenge or immediate influence." },{ label: "Foundation", desc: "The root of the matter." },{ label: "Past", desc: "Recent events that are fading." },{ label: "Crown", desc: "Your goal or best possible outcome." },{ label: "Future", desc: "The approaching influence." },{ label: "Self", desc: "Your attitude and approach." },{ label: "Environment", desc: "External influences around you." },{ label: "Hopes/Fears", desc: "Your hidden hopes or fears." },{ label: "Outcome", desc: "The final result." }] }
+        };
+
+        let currentSpread = 'single';
+        let currentOrientation = 'random';
+        let currentReading = [];
+        let currentQuestion = '';
+
+        // ========================
+        // PARTICLES
+        // ========================
+        const canvas = document.getElementById('particles');
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+        function resizeCanvas() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        class Particle {
+            constructor() { this.reset(); }
+            reset() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height;
+                this.size = Math.random() * 2.5 + 0.5;
+                this.speedX = (Math.random() - 0.5) * 0.3;
+                this.speedY = (Math.random() - 0.5) * 0.3;
+                this.opacity = Math.random() * 0.5 + 0.1;
+                this.growing = Math.random() > 0.5;
+            }
+            update() {
+                this.x += this.speedX; this.y += this.speedY;
+                if (this.x < 0 || this.x > canvas.width || this.y < 0 || this.y > canvas.height) this.reset();
+                if (this.growing) { this.opacity += 0.003; if (this.opacity >= 0.6) this.growing = false; }
+                else { this.opacity -= 0.003; if (this.opacity <= 0.1) this.growing = true; }
+            }
+            draw() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fillStyle = document.documentElement.classList.contains('dark') ? `rgba(216, 180, 254, ${this.opacity})` : `rgba(168, 85, 247, ${this.opacity})`;
+                ctx.fill();
+            }
+        }
+        for (let i = 0; i < 60; i++) particles.push(new Particle());
+        function animateParticles() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            particles.forEach(p => { p.update(); p.draw(); });
+            requestAnimationFrame(animateParticles);
+        }
+        animateParticles();
+
+        // ========================
+        // THEME
+        // ========================
+        const themeToggle = document.getElementById('themeToggle');
+        const themeIcon = document.getElementById('themeIcon');
+        function setTheme(dark) {
+            if (dark) { document.documentElement.classList.add('dark'); themeIcon.innerHTML = '&#9788;'; }
+            else { document.documentElement.classList.remove('dark'); themeIcon.innerHTML = '&#9790;'; }
+            localStorage.setItem('tarotTheme', dark ? 'dark' : 'light');
+        }
+        themeToggle.addEventListener('click', () => setTheme(!document.documentElement.classList.contains('dark')));
+        const savedTheme = localStorage.getItem('tarotTheme');
+        if (savedTheme === 'dark') setTheme(true);
+        else if (savedTheme === 'light') setTheme(false);
+        else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) setTheme(true);
+
+        // ========================
+        // NAVIGATION
+        // ========================
+        function showScreen(id) {
+            ['homeScreen', 'setupScreen', 'shuffleScreen', 'readingScreen', 'historyScreen'].forEach(s => document.getElementById(s).classList.add('hidden'));
+            document.getElementById(id).classList.remove('hidden');
+            window.scrollTo(0, 0);
+        }
+        document.getElementById('startBtn').addEventListener('click', () => showScreen('setupScreen'));
+        document.getElementById('backToHome').addEventListener('click', () => showScreen('homeScreen'));
+        document.getElementById('newReadingBtn').addEventListener('click', () => { showScreen('setupScreen'); document.getElementById('questionInput').value = ''; });
+        document.getElementById('historyBtn').addEventListener('click', renderHistory);
+        document.getElementById('historyBtnMobile').addEventListener('click', renderHistory);
+        document.getElementById('closeHistoryBtn').addEventListener('click', () => showScreen('homeScreen'));
+
+        // ========================
+        // SPREAD SELECTION
+        // ========================
+        document.querySelectorAll('.spread-select-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.spread-select-btn').forEach(b => { b.classList.remove('active','border-lavender-500','bg-lavender-100','dark:bg-lavender-900/50'); b.classList.add('border-lavender-200','dark:border-lavender-800'); });
+                btn.classList.add('active','border-lavender-500','bg-lavender-100','dark:bg-lavender-900/50'); btn.classList.remove('border-lavender-200','dark:border-lavender-800');
+                currentSpread = btn.dataset.spread;
+            });
+        });
+        document.querySelectorAll('.orientation-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.orientation-btn').forEach(b => { b.classList.remove('active','border-lavender-500','bg-lavender-100','dark:bg-lavender-900/50'); b.classList.add('border-lavender-200','dark:border-lavender-800'); });
+                btn.classList.add('active','border-lavender-500','bg-lavender-100','dark:bg-lavender-900/50'); btn.classList.remove('border-lavender-200','dark:border-lavender-800');
+                currentOrientation = btn.dataset.orientation;
+            });
+        });
+
+        // ========================
+        // DRAW CARDS
+        // ========================
+        document.getElementById('drawCardsBtn').addEventListener('click', async () => {
+            currentQuestion = document.getElementById('questionInput').value.trim() || 'General Guidance';
+            showScreen('shuffleScreen');
+            const c1 = document.getElementById('shuffleCard1'); const c2 = document.getElementById('shuffleCard2'); const c3 = document.getElementById('shuffleCard3'); const txt = document.getElementById('shuffleText');
+            c1.classList.add('shuffle-anim-left'); c2.classList.add('shuffle-anim-right'); c3.classList.add('shuffle-anim-left');
+            await new Promise(r => setTimeout(r, 1500)); txt.textContent = 'The cards are aligning...';
+            await new Promise(r => setTimeout(r, 1200)); txt.textContent = 'Your reading awaits...';
+            await new Promise(r => setTimeout(r, 1000));
+            c1.classList.remove('shuffle-anim-left'); c2.classList.remove('shuffle-anim-right'); c3.classList.remove('shuffle-anim-left');
+            performReading();
+        });
+
+        function getRandomCards(count) {
+            const deck = [...tarotDeck];
+            const result = [];
+            for (let i = 0; i < count; i++) {
+                const idx = Math.floor(Math.random() * deck.length);
+                const card = deck.splice(idx, 1)[0];
+                let reversed = false;
+                if (currentOrientation === 'random') reversed = Math.random() < 0.3;
+                else if (currentOrientation === 'reversed') reversed = true;
+                result.push({ ...card, reversed });
+            }
+            return result;
+        }
+
+        const difficultCards = ['The Tower', 'Death', 'The Devil', 'Ten of Swords', 'Three of Swords', 'Five of Cups', 'Nine of Swords'];
+
+        function performReading() {
+            const spread = spreads[currentSpread];
+            currentReading = getRandomCards(spread.positions.length);
+            renderSpread();
+            const hasDifficult = currentReading.some(c => difficultCards.includes(c.name));
+            document.getElementById('comfortBanner').classList.toggle('hidden', !hasDifficult);
+            document.getElementById('readingQuestion').textContent = currentQuestion ? `"${currentQuestion}"` : '';
+            document.getElementById('readingSpreadName').textContent = spread.name;
+            document.getElementById('interpretationSection').classList.add('hidden');
+            document.getElementById('showInterpretationBtn').textContent = 'Reveal Meaning';
+            showScreen('readingScreen');
+        }
+
+        // ========================
+        // RENDER SPREAD
+        // ========================
+        function renderSpread() {
+            const container = document.getElementById('spreadContainer');
+            container.innerHTML = '';
+            const spread = spreads[currentSpread];
+            if (currentSpread === 'celtic') {
+                const grid = document.createElement('div'); grid.className = 'celtic-cross';
+                currentReading.forEach((card, i) => {
+                    const wrap = document.createElement('div'); wrap.className = `cc-pos-${i+1} card-scene cursor-pointer`; wrap.style.height = '140px';
+                    wrap.innerHTML = buildCardHTML(card, spread.positions[i], i);
+                    wrap.addEventListener('click', () => flipCard(wrap, card));
+                    grid.appendChild(wrap);
+                });
+                container.appendChild(grid);
+            } else {
+                let gridClass = 'flex flex-wrap justify-center gap-4 md:gap-6';
+                if (currentSpread === 'three') gridClass = 'grid grid-cols-1 sm:grid-cols-3 gap-4 md:gap-6 max-w-3xl mx-auto';
+                if (currentSpread === 'five') gridClass = 'grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4 max-w-5xl mx-auto';
+                if (currentSpread === 'single') gridClass = 'flex justify-center';
+                const grid = document.createElement('div'); grid.className = gridClass;
+                currentReading.forEach((card, i) => {
+                    const wrap = document.createElement('div'); wrap.className = 'card-scene cursor-pointer';
+                    wrap.style.width = currentSpread === 'single' ? '180px' : '140px';
+                    wrap.style.height = currentSpread === 'single' ? '280px' : '220px';
+                    wrap.innerHTML = buildCardHTML(card, spread.positions[i], i);
+                    wrap.addEventListener('click', () => flipCard(wrap, card));
+                    grid.appendChild(wrap);
+                });
+                container.appendChild(grid);
+            }
+        }
+
+        function buildCardHTML(card, position, index) {
+            return `
+                <div class="card-inner">
+                    <div class="card-face card-back"><img src="Cards-jpg/CardBacks.jpg" alt="Card back" loading="lazy"></div>
+                    <div class="card-face card-front"><img src="${card.image}" alt="${card.name}" loading="lazy"></div>
+                </div>
+                <div class="text-center mt-2 position-label text-lavender-600 dark:text-lavender-400">${position.label}</div>
+            `;
+        }
+
+        function flipCard(element, card) {
+            element.classList.toggle('flipped');
+            if (card.reversed && element.classList.contains('flipped')) element.classList.add('reversed');
+            else element.classList.remove('reversed');
+        }
+
+        // ========================
+        // INTERPRETATION
+        // ========================
+        document.getElementById('showInterpretationBtn').addEventListener('click', () => {
+            const section = document.getElementById('interpretationSection');
+            const btn = document.getElementById('showInterpretationBtn');
+            if (section.classList.contains('hidden')) {
+                renderInterpretation(); section.classList.remove('hidden'); section.classList.add('animate-slide-up'); btn.textContent = 'Hide Meaning';
+            } else { section.classList.add('hidden'); btn.textContent = 'Reveal Meaning'; }
+        });
+
+        function renderInterpretation() {
+            const content = document.getElementById('interpretationContent');
+            content.innerHTML = '';
+            const spread = spreads[currentSpread];
+            currentReading.forEach((card, i) => {
+                const div = document.createElement('div'); div.className = 'border-l-4 border-lavender-400 dark:border-lavender-600 pl-4 py-1';
+                const orient = card.reversed ? 'Reversed' : 'Upright';
+                const meaning = card.reversed ? card.reversed : card.upright;
+                div.innerHTML = `
+                    <div class="font-serif font-bold text-lg text-lavender-800 dark:text-lavender-200">${card.name} <span class="text-sm font-sans font-normal text-lavender-500 dark:text-lavender-400">(${orient})</span> &mdash; ${spread.positions[i].label}</div>
+                    <div class="text-sm text-lavender-600 dark:text-lavender-400 mb-1 italic">${spread.positions[i].desc}</div>
+                    <p class="text-slate-700 dark:text-lavender-100 leading-relaxed">${meaning}</p>
+                `;
+                content.appendChild(div);
+            });
+            const cta = document.createElement('div'); cta.className = 'text-center mt-6 pt-4 border-t border-lavender-200 dark:border-lavender-800';
+            cta.innerHTML = `<button onclick="window.askCompanionAboutReading()" class="text-sm text-lavender-600 dark:text-lavender-300 underline hover:text-lavender-500 transition-colors">Ask your companion for deeper insight on this reading</button>`;
+            content.appendChild(cta);
+        }
+
+        // ========================
+        // SAVE / HISTORY
+        // ========================
+        document.getElementById('saveReadingBtn').addEventListener('click', () => {
+            const reading = {
+                id: Date.now(), date: new Date().toLocaleString(), question: currentQuestion,
+                spread: spreads[currentSpread].name, spreadKey: currentSpread,
+                cards: currentReading.map(c => ({ id: c.id, name: c.name, reversed: c.reversed }))
+            };
+            let history = JSON.parse(localStorage.getItem('tarotHistory') || '[]');
+            history.unshift(reading); if (history.length > 50) history = history.slice(0, 50);
+            localStorage.setItem('tarotHistory', JSON.stringify(history));
+            alert('Reading saved to your journal.');
+        });
+
+        function renderHistory() {
+            const list = document.getElementById('historyList'); const empty = document.getElementById('emptyHistory');
+            const history = JSON.parse(localStorage.getItem('tarotHistory') || '[]');
+            list.innerHTML = '';
+            if (history.length === 0) { empty.classList.remove('hidden'); }
+            else {
+                empty.classList.add('hidden');
+                history.forEach((reading, index) => {
+                    const div = document.createElement('div'); div.className = 'glass rounded-xl p-5 hover:shadow-lg transition-shadow';
+                    const cardNames = reading.cards.map(c => c.name + (c.reversed ? ' (R)' : '')).join(', ');
+                    div.innerHTML = `
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2">
+                            <div>
+                                <div class="font-serif font-bold text-lg text-lavender-800 dark:text-lavender-200">${reading.spread}</div>
+                                <div class="text-xs text-lavender-500 dark:text-lavender-500">${reading.date}</div>
+                            </div>
+                            <div class="flex gap-2">
+                                <button class="view-history-btn px-3 py-1.5 rounded-lg bg-lavender-500 text-white text-sm hover:bg-lavender-600 transition-colors" data-index="${index}">View</button>
+                                <button class="delete-history-btn px-3 py-1.5 rounded-lg border border-red-300 text-red-500 text-sm hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors" data-index="${index}">Delete</button>
+                            </div>
+                        </div>
+                        <div class="text-sm text-slate-700 dark:text-lavender-200 italic mb-2">${reading.question ? '"' + reading.question + '"' : 'General Guidance'}</div>
+                        <div class="text-xs text-lavender-600 dark:text-lavender-400">${cardNames}</div>
+                    `;
+                    list.appendChild(div);
+                });
+            }
+            list.querySelectorAll('.view-history-btn').forEach(btn => btn.addEventListener('click', () => loadHistoryReading(parseInt(btn.dataset.index))));
+            list.querySelectorAll('.delete-history-btn').forEach(btn => btn.addEventListener('click', () => {
+                let history = JSON.parse(localStorage.getItem('tarotHistory') || '[]');
+                history.splice(parseInt(btn.dataset.index), 1); localStorage.setItem('tarotHistory', JSON.stringify(history)); renderHistory();
+            }));
+            showScreen('historyScreen');
+        }
+
+        function loadHistoryReading(index) {
+            const history = JSON.parse(localStorage.getItem('tarotHistory') || '[]');
+            const reading = history[index]; if (!reading) return;
+            currentQuestion = reading.question; currentSpread = reading.spreadKey;
+            currentReading = reading.cards.map(c => { const card = tarotDeck.find(d => d.id === c.id); return { ...card, reversed: c.reversed }; });
+            document.getElementById('readingQuestion').textContent = currentQuestion ? `"${currentQuestion}"` : '';
+            document.getElementById('readingSpreadName').textContent = reading.spread;
+            document.getElementById('interpretationSection').classList.add('hidden');
+            document.getElementById('showInterpretationBtn').textContent = 'Reveal Meaning';
+            renderSpread(); showScreen('readingScreen');
+        }
+
+        // ========================
+        // GEMINI API & CHAT
+        // ========================
+        const GEMINI_API_KEY = window.GEMINI_API_KEY;
+        if (!GEMINI_API_KEY) {
+            console.error('Mystic Companion: API key not found. Ensure api-config.js exists and sets window.GEMINI_API_KEY.');
+        }
+        const GEMINI_MODEL = 'gemini-1.5-flash';
+        const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${GEMINI_API_KEY}`;
+        let chatMessages = [];
+        const CHAT_STORAGE_KEY = 'tarotChatHistory';
+
+        function loadChatHistory() {
+            chatMessages = JSON.parse(localStorage.getItem(CHAT_STORAGE_KEY) || '[]');
+            if (chatMessages.length === 0) {
+                chatMessages.push({
+                    role: 'assistant',
+                    content: 'Greetings, seeker. I am your Mystic Companion. I remember your past readings and am here to offer comfort, insight, and guidance. What weighs on your heart today?'
+                });
+                saveChatHistory();
+            }
+            renderChat();
+        }
+        function saveChatHistory() { if (chatMessages.length > 100) chatMessages = chatMessages.slice(-100); localStorage.setItem(CHAT_STORAGE_KEY, JSON.stringify(chatMessages)); }
+        function renderChat() {
+            const container = document.getElementById('chatMessages'); container.innerHTML = '';
+            chatMessages.forEach(msg => { const div = document.createElement('div'); div.className = `chat-bubble ${msg.role}`; div.textContent = msg.content; container.appendChild(div); });
+            container.scrollTop = container.scrollHeight;
+        }
+        function showTyping() { const container = document.getElementById('chatMessages'); const div = document.createElement('div'); div.id = 'typingIndicator'; div.className = 'typing-indicator'; div.innerHTML = '<span></span><span></span><span></span>'; container.appendChild(div); container.scrollTop = container.scrollHeight; }
+        function hideTyping() { const el = document.getElementById('typingIndicator'); if (el) el.remove(); }
+
+        function buildSystemPrompt() {
+            const history = JSON.parse(localStorage.getItem('tarotHistory') || '[]');
+            let context = '';
+            if (history.length > 0) {
+                context += "User's Tarot Reading History (most recent first):\n";
+                history.slice(0, 5).forEach((r, i) => {
+                    context += `\n[Reading ${i+1}] ${r.date} | ${r.spread} | Question: ${r.question || 'General Guidance'}\n`;
+                    r.cards.forEach(c => { context += `  - ${c.name} ${c.reversed ? '(Reversed)' : '(Upright)'}\n`; });
+                });
+                context += '\n';
+            }
+            const latest = history[0];
+            let comfortNote = '';
+            if (latest) {
+                const hasDifficult = latest.cards.some(c => difficultCards.includes(c.name));
+                if (hasDifficult) comfortNote = "\nNote: The user's most recent reading contains challenging cards. Offer extra gentleness, reassurance, and perspective — remind them that difficult cards represent energy in motion and opportunities for growth, not fixed doom.\n";
+            }
+            return `You are Mystic Lavender, a wise, compassionate, and spiritually attuned tarot companion. You speak with poetic warmth and gentle insight. Your role is to comfort the user, help them reflect on their readings, and offer meaningful guidance.
+
+${context}${comfortNote}Guidelines:
+- Be warm, concise (under 150 words), and emotionally supportive.
+- Reference their actual card history when relevant to make guidance personal.
+- If they seem worried or sad, validate their feelings and offer hope.
+- Never give medical, legal, or financial advice.
+- Frame all insights as invitations for reflection, not commands.
+- Use mystical but accessible language.`;
+        }
+
+        async function sendChatMessage(overrideText) {
+            const input = document.getElementById('chatInput');
+            const text = (overrideText || input.value).trim();
+            if (!text) return;
+            if (!overrideText) input.value = '';
+            chatMessages.push({ role: 'user', content: text });
+            saveChatHistory(); renderChat(); showTyping();
+            try {
+                const apiMessages = chatMessages.map(m => ({ role: m.role === 'assistant' ? 'model' : 'user', parts: [{ text: m.content }] }));
+                const res = await fetch(GEMINI_URL, {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        systemInstruction: { parts: [{ text: buildSystemPrompt() }] },
+                        contents: apiMessages,
+                        generationConfig: { temperature: 0.8, maxOutputTokens: 800 }
+                    })
+                });
+                const data = await res.json();
+                let reply = 'The mists are too thick... try again when the energy clears.';
+                if (data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts) {
+                    reply = data.candidates[0].content.parts[0].text;
+                }
+                chatMessages.push({ role: 'assistant', content: reply });
+                saveChatHistory(); hideTyping(); renderChat();
+            } catch (err) {
+                hideTyping();
+                chatMessages.push({ role: 'assistant', content: 'The connection to the astral plane wavers. Please try again in a moment.' });
+                saveChatHistory(); renderChat();
+            }
+        }
+
+        window.askCompanionAboutReading = function() {
+            const history = JSON.parse(localStorage.getItem('tarotHistory') || '[]');
+            const latest = history[0]; if (!latest) return;
+            const q = `Can you give me deeper insight on my most recent reading? It was a ${latest.spread} about "${latest.question || 'General Guidance'}".`;
+            chatWidget.classList.add('open'); chatMessages.push({ role: 'user', content: q }); saveChatHistory(); renderChat(); sendChatMessage(q);
+        };
+
+        // Chat UI events
+        const chatWidget = document.getElementById('chatWidget');
+        const chatToggleBtn = document.getElementById('chatToggleBtn');
+        const chatCloseBtn = document.getElementById('chatCloseBtn');
+        const chatClearBtn = document.getElementById('chatClearBtn');
+        const chatSendBtn = document.getElementById('chatSendBtn');
+        const chatInput = document.getElementById('chatInput');
+
+        function toggleChat() { chatWidget.classList.toggle('open'); if (chatWidget.classList.contains('open')) setTimeout(() => chatInput.focus(), 100); }
+        window.toggleChat = toggleChat;
+        chatToggleBtn.addEventListener('click', toggleChat);
+        chatCloseBtn.addEventListener('click', toggleChat);
+        chatClearBtn.addEventListener('click', () => { if (confirm('Forget our conversation?')) { chatMessages = []; saveChatHistory(); loadChatHistory(); } });
+        chatSendBtn.addEventListener('click', () => sendChatMessage());
+        chatInput.addEventListener('keypress', e => { if (e.key === 'Enter') sendChatMessage(); });
+
+        loadChatHistory();
+    </script>
+</body>
+</html>
