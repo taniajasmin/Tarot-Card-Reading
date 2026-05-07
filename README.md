@@ -1,4 +1,4 @@
-# Mystic Lavender Tarot
+# Mystic Tarot Card Reading
 
 A beautiful, standalone tarot reading web application with a soft lavender aesthetic, real card artwork, and an AI-powered Mystic Companion.
 
@@ -197,7 +197,3 @@ Set `GEMINI_API_KEY` in the platform's **Environment Variables** dashboard.
 - Tarot meanings based on traditional Rider-Waite-Smith symbolism.
 - AI companion powered by [Google Gemini](https://ai.google.dev/).
 - Built with [Tailwind CSS](https://tailwindcss.com/).
-
-## License
-
-MIT — feel free to use, modify, and share. Please keep the `api-config.js` file private.
